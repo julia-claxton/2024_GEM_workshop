@@ -3,7 +3,9 @@ Julia Claxton (she/her), julia.claxton@colorado.edu \
 *Lightning, Atmosphere, Ionosphere, and Radiation Belts (LAIR) Group* \
 *Colorado Center for Astrodynamics Research, University of Colorado Boulder*
 
-This repository contains all code necessary to reproduce the results of the poster *EMIC-Induced Precipitation as Measured by ELFIN: Source Regions, Impacts, and Energy Dependence* presented at the 2024 Geospace Environment Modeling (GEM) workshop, as well as the poster itself. You can find the poster in `.svg` and `.png` formats at `/results/GEM_workshop_2024`.
+This repository contains all code necessary to reproduce the results of the poster *EMIC-Induced Precipitation as Measured by ELFIN: Source Regions, Impacts, and Energy Dependence* presented at the 2024 Geospace Environment Modeling (GEM) workshop, as well as the poster itself. You can find the poster in `.svg` and `.pdf` formats in `/results/GEM_workshop_2024/`.
+
+Works cited are located at `/REFERENCES.md`.
 
 The poster abstract can be found at `/results/GEM_workshop_2024/GEM_workshop_abstract.txt` and is reproduced below.
 
