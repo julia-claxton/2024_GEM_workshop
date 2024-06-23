@@ -430,10 +430,12 @@ if EIP_DISTROS == true
 
     # Settings
     latitude_nbins = 45
+    longitude_nbins = 45
     MLT_nbins = 24
     L_nbins = 25
 
     latitude_bin_edges = LinRange(-90, 90, latitude_nbins + 1)
+    longitude_bin_edges = LinRange(-180, 180, longitude_nbins + 1)
     MLT_bin_edges = LinRange(0, 24, MLT_nbins + 1)
     L_bin_edges = LinRange(0, 25, L_nbins + 1)
 
@@ -489,7 +491,7 @@ if EIP_DISTROS == true
     coverage_duration = float.(coverage_duration)
     converted_coverage_coords = npzread("../data/all_coverage_latlong.npz")
     coverage_latitude = converted_coverage_coords["lat"]
-
+    coverage_longitude = converted_coverage_coords["lon"]
 
     # Distribution of EMIC energy in MLT/latittude
     # Calculate energy input of each event, as well as getting ELFIN's position for field tracing
@@ -513,15 +515,16 @@ if EIP_DISTROS == true
     run(`python3.9 ./convert_gei_to_lla.py`, wait = true)
     converted_coords = npzread("../data/locations_latlong.npz")
     emic_latitude = converted_coords["lat"]
+    emic_longitude = converted_coords["lon"]
     rm("../data/locations_latlong.npz")
     println("EMIC coordinate conversion complete\n")
-
+    
 
     # Calculate distributions
     # Atmospheric input figure (MLT/lat)
-    energy_input_distro = my_2d_histogram(MLT, emic_latitude, MLT_bin_edges, latitude_bin_edges, weights = energy_input)
-    coverage_distro_mlt_lat = my_2d_histogram(coverage_MLT, coverage_latitude, MLT_bin_edges, latitude_bin_edges, weights = coverage_duration)
-    emic_flux_input_distro = energy_input_distro ./ coverage_distro_mlt_lat
+    energy_input_distro = my_2d_histogram(emic_longitude, emic_latitude, longitude_bin_edges, latitude_bin_edges, weights = energy_input)
+    coverage_distro = my_2d_histogram(coverage_longitude, coverage_latitude, longitude_bin_edges, latitude_bin_edges, weights = coverage_duration)
+    emic_flux_input_distro = energy_input_distro ./ coverage_distro
     replace!(emic_flux_input_distro, 0 => NaN)
 
     # EMIC origin figure (MLT/L)
@@ -541,13 +544,13 @@ if EIP_DISTROS == true
 
     # Plot results
     # Plot the world overlaid with energy input
-    heatmap(MLT_bin_edges, latitude_bin_edges, log10.(emic_flux_input_distro'),
+    heatmap(longitude_bin_edges, latitude_bin_edges, log10.(emic_flux_input_distro'),
         title = "EMIC-Driven Atmospheric Energy Input",
 
-        xlabel = "MLT, hour",
-        xlims = (0, 24),
-        xticks = 0:3:24,
-        xminorticks = 3,
+        xlabel = "Longitude, deg",
+        xlims = (-180, 180),
+        xticks = -180:60:180,
+        xminorticks = 6,
 
         ylabel = "Latitude, deg",
         ylims = (-90, 90),
@@ -565,42 +568,42 @@ if EIP_DISTROS == true
         minorgrid = true,
         foreground_color_grid = :black,
         foreground_color_minor_grid = :black,
-        aspect_ratio = (360/24)/180,
+        aspect_ratio = 1.2,
     )
     plot!(
         background_color_inside = RGB(0xd4d2dc),
         background_color_outside = BG_COLOR
     )
     plot!(twinx(),
-        xlims = (0, 24),
-        xticks = 0:3:24,
-        xminorticks = 3,
+        xlims = (-180, 180),
+        xticks = -180:60:180,
+        xminorticks = 6,
 
         ylims = (-90, 90),
         yticks = -90:30:90,
         yminorticks = 3,
 
-        aspect_ratio = (360/24)/180,
+        aspect_ratio = 1.2,
         grid = true,
         foreground_color_grid = :black,
         tickdirection = :out
     )
     plot!(twiny(),
-        xlims = (0, 24),
-        xticks = 0:3:24,
-        xminorticks = 3,
+        xlims = (-180, 180),
+        xticks = -180:60:180,
+        xminorticks = 6,
 
         ylims = (-90, 90),
         yticks = -90:30:90,
         yminorticks = 3,
 
-        aspect_ratio = (360/24)/180,
+        aspect_ratio = 1.2,
         grid = true,
         foreground_color_grid = :black,
-        tickdirection = :out,
+        tickdirection = :out
     )
     to_plot_coastlines = replace(coastlines', 2 => 0) .* 8
-    contour!(coastlines_MLT, coastlines_lat, to_plot_coastlines,
+    contour!(coastlines_lon, coastlines_lat, to_plot_coastlines,
         levels = 5:11,
         clims = (2,7),
         linecolor = :black
@@ -626,7 +629,6 @@ if EIP_DISTROS == true
     )
     png("../results/figures/emic_atmosphere_input.png")
     display(plot!())
-
 
 
     # Plot where EMIC events originate
